@@ -1,3 +1,4 @@
+from typing import Optional
 from fastapi import Depends, HTTPException, security, status
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
@@ -12,7 +13,7 @@ ACCESS_TOKEN_EXPIRE_MINUTES = int(settings.ACCESS_TOKEN_EXPIRE_MINUTES)
 
 OAUTH_SCHEME = security.OAuth2PasswordBearer(tokenUrl="login")
 
-def create_access_token(data: dict, expires_delta: timedelta | None = None):
+def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
     if expires_delta:
         expire = datetime.utcnow() + expires_delta
