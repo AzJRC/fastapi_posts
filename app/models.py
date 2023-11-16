@@ -11,10 +11,12 @@ class ResponseUserCreation(BaseModel):
 class ResponseUser(BaseModel):
     email: EmailStr
     username: str
-    votes_given: Optional[int] = 0
 
 class BaseUser(ResponseUser):
     password: str
+
+class ResponseUserWithVotes(ResponseUser):
+    votes_given: Optional[int] = 0
 
 # Post Models
 

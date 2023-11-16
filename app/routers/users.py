@@ -1,25 +1,33 @@
-from fastapi import status, HTTPException, APIRouter
-from ..models import BaseUser, ResponseUserCreation
-from ..utils import make_connection, hash_password, close_connection
+from fastapi import Depends, status, HTTPException, APIRouter
+from sqlalchemy import or_
+from .. import models
+from ..utils import hash_password
+from sqlalchemy.orm import Session
+from app.database import UsersTable, get_db
 
 router = APIRouter(
     prefix="/users",
     tags=["Users"])
 
 
-@router.post("/", response_model=ResponseUserCreation, status_code=status.HTTP_201_CREATED)
-def create_user(user: BaseUser):
-    db_conn, db_cursor = make_connection()
-    user.password = hash_password(user.password)
+@router.post("/", response_model=models.ResponseUserCreation, status_code=status.HTTP_201_CREATED)
+def create_user(user: models.BaseUser, db: Session = Depends(get_db)):
+    hashed_password = hash_password(user.password)
+    user.password = hashed_password
+
+    existing_user = db.query(UsersTable).filter(or_(UsersTable.email == user.email, UsersTable.username == user.username)).first()
+
+    if existing_user:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Credentials alredy used.")
+
+    db_user = UsersTable(**user.model_dump())
+
     try:
-        db_cursor.execute(
-            "INSERT INTO public.users (email, username, password) VALUES (%s, %s, %s) RETURNING *;", 
-            params=(user.email, user.username, user.password))
+        db.add(db_user)
+        db.commit()
+        db.refresh(db_user)
     except Exception as e:
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists.")
+        print(e)
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Something gone wrong. Try again in a few minutes.")
     else:
-        user = db_cursor.fetchone()
-        return user
-    finally:
-        db_conn.commit()
-        close_connection(db_conn)
+        return db_user
