@@ -1,5 +1,5 @@
 from fastapi import status, HTTPException, APIRouter
-from ..models import BaseUser, ResponseUser
+from ..models import BaseUser, ResponseUserCreation
 from ..utils import make_connection, hash_password, close_connection
 
 router = APIRouter(
@@ -7,7 +7,7 @@ router = APIRouter(
     tags=["Users"])
 
 
-@router.post("/", response_model=ResponseUser, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=ResponseUserCreation, status_code=status.HTTP_201_CREATED)
 def create_user(user: BaseUser):
     db_conn, db_cursor = make_connection()
     user.password = hash_password(user.password)

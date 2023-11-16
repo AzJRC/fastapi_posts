@@ -4,6 +4,10 @@ import datetime
 
 # User models
 
+class ResponseUserCreation(BaseModel):
+    email: EmailStr
+    username: str
+
 class ResponseUser(BaseModel):
     email: EmailStr
     username: str

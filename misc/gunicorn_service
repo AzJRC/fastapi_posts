@@ -1,0 +1,14 @@
+[Unit]
+Description=gunicorn instance to serve api in the background
+After=network.target
+
+[Service]
+User=rodajrc
+Group=rodajrc
+WorkingDirectory=/home/rodajrc/app/src/
+Environment=PATH=/home/rodajrc/app/venv/bin
+EnvironmentFile=PATH=/home/rodajrc/app/.env
+ExecStart=/home/rodajrc/app/venv/bin/gunicorn -w 4 -k uvicorn.workers.UvicornWorker app.main:app --bind 0.0.0.0:8000
+
+[Install]
+WantedBy=multi-user.target
