@@ -1,10 +1,12 @@
-from typing import Optional
-from fastapi import Depends, HTTPException, security, status
-from jose import JWTError, jwt
-from datetime import datetime, timedelta
-from .utils import close_connection, make_connection
 from . import models
 from .settings import settings
+from datetime import datetime, timedelta
+from typing import Optional
+from jose import JWTError, jwt
+from fastapi import Depends, HTTPException, security, status
+from app.database import UsersTable, get_db
+from sqlalchemy.orm import Session
+#from .utils import close_connection, make_connection
 
 # From env vars
 SECRET_KEY = settings.SECRET_KEY
@@ -36,14 +38,16 @@ def verify_token(token: str, credential_exception):
         raise credential_exception
     return token_data
     
-def get_user_from_token(token: str = Depends(OAUTH_SCHEME)):
+def get_user_from_token(token: str = Depends(OAUTH_SCHEME), db: Session = Depends(get_db)):
     credential_exception = HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, 
                                          detail="Could not validate credentials.", 
                                          headers={"WWW-Authenticate": "Bearer"})
     user_auth = verify_token(token, credential_exception)
-    db_conn, db_cursor = make_connection()
-    db_cursor.execute("SELECT * FROM public.users WHERE id = %s AND username = %s",
-                      params=(user_auth.id,user_auth.username))
-    user = db_cursor.fetchone()
-    close_connection(db_conn)
+    # db_conn, db_cursor = make_connection()
+    # db_cursor.execute("SELECT * FROM public.users WHERE id = %s AND username = %s", params=(user_auth.id,user_auth.username))
+    # user = db_cursor.fetchone()
+    #close_connection(db_conn)
+    user = db.query(UsersTable).filter(UsersTable.id == user_auth.id, UsersTable.username == user_auth.username).first()
+    if not user:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="User does not exist.")
     return user
