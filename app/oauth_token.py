@@ -34,7 +34,8 @@ def verify_token(token: str, credential_exception):
         if not user_username or not user_id or datetime.utcnow() > datetime.utcfromtimestamp(expiration):
             raise credential_exception
         token_data = models.DataToken(id=user_id, username=user_username)
-    except JWTError:
+    except JWTError as e:
+        print(e)
         raise credential_exception
     return token_data
     

@@ -4,6 +4,7 @@ from sqlalchemy import create_engine, text, Boolean, Column, ForeignKey, Integer
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
 from .settings import settings
+from sqlalchemy.orm import relationship
 
 # Psycopg DB Connection and cursor
 
@@ -38,6 +39,8 @@ class PostsTable(Base):
     creation_date = Column(TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False)
     last_update = Column(TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False)
     user_id = Column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
+    
+    user = relationship("UsersTable", foreign_keys=[user_id])
 
 class UsersTable(Base):
     __tablename__ = "users"
@@ -51,4 +54,7 @@ class VotesTable(Base):
     __tablename__ = "votes"
     user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE"), primary_key=True, nullable=False)
     post_id = Column(Integer, ForeignKey("posts.id", ondelete="CASCADE"), primary_key=True, nullable=False)
+
+    user = relationship("UsersTable", foreign_keys=[user_id])
+    post = relationship("PostsTable", foreign_keys=[post_id])
 

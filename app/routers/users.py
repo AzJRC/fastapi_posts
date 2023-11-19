@@ -26,7 +26,7 @@ def create_user(user: models.BaseUser, db: Session = Depends(get_db)):
         db.refresh(db_user)
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Something gone wrong. Try again later.")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     else:
         return db_user
 
@@ -34,9 +34,9 @@ def create_user(user: models.BaseUser, db: Session = Depends(get_db)):
 def delete_user(db: Session = Depends(get_db), user: models.DataToken = Depends(get_user_from_token)):
     try:
         user_deleted = db.query(UsersTable).filter(UsersTable.id == user.id).delete()
-        print(user_deleted)
     except Exception as e:
         print(e)
-        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Something gone wrong. Try again later.")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
     else:
         db.commit()
+        return
