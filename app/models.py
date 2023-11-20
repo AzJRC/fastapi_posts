@@ -24,13 +24,15 @@ class BasePost(BaseModel):
     title: str
     content: str
     published: bool = True
-
-class ResponsePost(BasePost):
+    
+class ExtraPost(BasePost):
     creation_date: datetime.datetime
     last_update: datetime.datetime
     user_id: int
     user: ResponseUser
-    post_votes: int = 0
+class ResponsePost(BaseModel):
+    PostsTable: ExtraPost
+    vote_count: int
 
 # Login models
 

@@ -1,12 +1,10 @@
-from typing import Any, List, Union
+from typing import List
 from fastapi import Depends, status, HTTPException, APIRouter
-from app.database import UsersTable, get_db
+from sqlalchemy import func
+from app.database import UsersTable, VotesTable, PostsTable, get_db
 from ..models import BasePost, ResponsePost, DataToken
-from ..utils import make_connection, close_connection
 from ..oauth_token import get_user_from_token
-from sqlalchemy import insert, delete, update
 from sqlalchemy.orm import Session
-from app.database import PostsTable
 
 router = APIRouter(
     prefix="/posts",
@@ -89,7 +87,10 @@ def read_posts(user=Depends(get_user_from_token), db: Session = Depends(get_db),
     #close_connection(db_conn)
 
     try:
-        post_query = db.query(PostsTable).join(UsersTable, PostsTable.user_id == UsersTable.id).limit(limit).offset(offset).all()
+        post_query = db.query(PostsTable, func.count(VotesTable.post_id).label("vote_count")).\
+            outerjoin(VotesTable, PostsTable.id == VotesTable.post_id).\
+            group_by(PostsTable.id).\
+            limit(limit).offset(offset).all()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)
@@ -113,7 +114,9 @@ def read_post(id: int, user=Depends(get_user_from_token), db: Session = Depends(
     # print(post_query)
 
     try:
-        post_query = db.query(PostsTable).join(UsersTable, PostsTable.user_id == UsersTable.id).filter(PostsTable.id == id).first()
+        post_query = db.query(PostsTable, func.count(VotesTable.post_id).label("vote_count")).\
+            outerjoin(VotesTable, PostsTable.id == VotesTable.post_id).\
+            group_by(PostsTable.id).filter(PostsTable.id == id).first()
     except Exception as e:
         print(e)
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR)

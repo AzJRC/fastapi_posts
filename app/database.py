@@ -39,8 +39,7 @@ class PostsTable(Base):
     creation_date = Column(TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False)
     last_update = Column(TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False)
     user_id = Column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    
-    user = relationship("UsersTable", foreign_keys=[user_id])
+    user = relationship("UsersTable")
 
 class UsersTable(Base):
     __tablename__ = "users"
