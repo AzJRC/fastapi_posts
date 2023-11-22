@@ -39,7 +39,8 @@ class PostsTable(Base):
     creation_date = Column(TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False)
     last_update = Column(TIMESTAMP(timezone=True), server_default=text("now()"), nullable=False)
     user_id = Column(ForeignKey("users.id", ondelete="CASCADE"), nullable=False)
-    user = relationship("UsersTable")
+    
+    user_details = relationship("UsersTable")
 
 class UsersTable(Base):
     __tablename__ = "users"
@@ -57,3 +58,16 @@ class VotesTable(Base):
     user = relationship("UsersTable", foreign_keys=[user_id])
     post = relationship("PostsTable", foreign_keys=[post_id])
 
+
+#Function found in <https://prahladyeri.github.io/blog/2015/07/sqlalchemy-hack-convert-dict.html> to convert
+#table objects (returned from queries) to python dicts
+# def to_dict(model_instance, query_instance=None):
+# 	if hasattr(model_instance, '__table__'):
+# 		return {c.name: str(getattr(model_instance, c.name)) for c in model_instance.__table__.columns}
+# 	else:
+# 		cols = query_instance.column_descriptions
+# 		return { cols[i]['name'] : model_instance[i]  for i in range(len(cols)) }
+     
+# def from_dict(dict, model_instance):
+# 	for c in model_instance.__table__.columns:
+# 		setattr(model_instance, c.name, dict[c.name])

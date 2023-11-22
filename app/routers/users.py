@@ -1,6 +1,5 @@
 from fastapi import Depends, status, HTTPException, APIRouter
 from sqlalchemy import or_
-
 from app.oauth_token import get_user_from_token
 from .. import models
 from ..utils import hash_password
